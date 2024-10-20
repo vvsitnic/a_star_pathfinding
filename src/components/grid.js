@@ -281,7 +281,7 @@ class Grid {
 
     if (path && this._pathStyle === 'line') {
       for (let i = 0; i < path.length - 1; i++) {
-        this._drawLine(path[i], path[i + 1], '#0066FF', 10);
+        this._drawLine(path[i], path[i + 1], '#0066FF', 12);
       }
     }
   }

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>A* Pathfinding by Sitnic Vladimir</title>
+    <link rel="icon" type="image/x-icon" href="./img/favicon.ico" />
+
+    <link rel="stylesheet" href="style.css" />
+    <script src="script.js" type="module"></script>
+  </head>
+  <body>
+    <canvas oncontextmenu="return false;" id="grid"></canvas>
+    <div class="draggable settings">
+      <h1>
+        A* pathfinding project by
+        <a href="https://github.com/vvsitnic" target="_blank"
+          >Sitnic Vladimir</a
+        >
+      </h1>
+      <ul>
+        <li>
+          Click within the white grid and drag your mouse to draw obstacles.
+        </li>
+        <li>
+          Drag the <span style="color: #00dd00">green</span> node to set the
+          start position.
+        </li>
+        <li>
+          Drag the <span style="color: #ee4400">red</span> node to set the end
+          position.
+        </li>
+      </ul>
+      <div>
+        <input type="checkbox" id="allow-diagonal" checked />
+        <label for="allow-diagonal">Allow Diagonal</label>
+      </div>
+      <div>
+        <input type="checkbox" id="redraw-path-automatically" checked />
+        <label for="redraw-path-automatically">Redraw Path Automatically</label>
+      </div>
+      <div class="row">
+        <button id="clear-walls">Clear Walls</button>
+        <button id="draw-path" style="display: none">Draw Path</button>
+      </div>
+    </div>
+  </body>
+</html>

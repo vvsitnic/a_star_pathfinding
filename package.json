@@ -1,0 +1,20 @@
+{
+  "name": "a_star_pathfinding",
+  "version": "1.0.0",
+  "description": "Finds path from point A to point B avoiding obstacles.",
+  "main": "script.js",
+  "scripts": {
+    "dev": "parcel src/index.html",
+    "build": "parcel build src/index.html"
+  },
+  "keywords": [
+    "path",
+    "pathfinding",
+    "astar"
+  ],
+  "author": "Vladimir Sitnic",
+  "license": "ISC",
+  "devDependencies": {
+    "parcel": "^2.12.0"
+  }
+}

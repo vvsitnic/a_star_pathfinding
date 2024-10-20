@@ -83,7 +83,9 @@ class Grid {
       this._lastSelectedTile = tile;
 
       // Rethink path
-      this._aStar();
+      if (this._redrawPathAutomatically) {
+        this._aStar();
+      }
       // Redraw grid
       this._refreshGrid();
     });
@@ -118,8 +120,10 @@ class Grid {
           this._draggablePoint[0] = tileX;
           this._draggablePoint[1] = tileY;
 
-          // Rethink path
-          this._aStar();
+          if (this._redrawPathAutomatically) {
+            // Rethink path
+            this._aStar();
+          }
 
           this._refreshGrid();
         }
@@ -155,17 +159,18 @@ class Grid {
 
       // Update prev tile
       this._prevTile = [tileX, tileY];
-      // Rethink path
-      this._aStar();
-      // Redraw grid
+      if (this._redrawPathAutomatically) {
+        // Rethink path
+        this._aStar();
+      }
       this._refreshGrid();
     });
   }
 
   _aStar() {
     this._path = a_star(
-      this._point1,
-      this._point2,
+      [...this._point1],
+      [...this._point2],
       this._gridSize[0],
       this._gridSize[1],
       this._walls,
@@ -208,10 +213,7 @@ class Grid {
       this._drawSquare(tile[0], tile[1], '#00000080');
     });
 
-    // Draw path conditionally
-    if (this._redrawPathAutomatically) {
-      this._drawPath();
-    }
+    this._drawPath();
 
     // Draw start and end points
     this._drawSquare(this._point1[0], this._point1[1], '#00DD00');
@@ -254,20 +256,20 @@ class Grid {
 
   clearWalls() {
     this._walls.splice(0, this._walls.length);
-    this._aStar();
+
+    if (this._redrawPathAutomatically) {
+      this._aStar();
+    }
     this._refreshGrid();
   }
 
   allowDiagonal(b) {
     this._allowDiagonal = b;
-    this._refreshGrid();
-  }
 
-  redrawPathAutomatically(b) {
-    this._redrawPathAutomatically = b;
-    if (b) {
-      this._refreshGrid();
+    if (this._redrawPathAutomatically) {
+      this._aStar();
     }
+    this._refreshGrid();
   }
 
   _drawPath() {
@@ -286,12 +288,21 @@ class Grid {
     }
   }
 
+  redrawPathAutomatically(b) {
+    this._redrawPathAutomatically = b;
+    if (b) {
+      this._aStar();
+      this._refreshGrid();
+    }
+  }
+
   setPathStyle(style) {
     this._pathStyle = style;
     this._refreshGrid();
   }
 
   refreshGrid() {
+    this._aStar();
     this._refreshGrid();
   }
 }

@@ -3,6 +3,7 @@ import Grid from './components/grid.js';
 
 const canvas = document.getElementById('grid');
 const draggableEl = document.querySelector('.draggable');
+const selectPathVisualCheckbox = document.getElementById('path-visual');
 const allowDiagonalCheckbox = document.getElementById('allow-diagonal');
 const clearWallsBtn = document.getElementById('clear-walls');
 const drawPathBtn = document.getElementById('draw-path');
@@ -20,7 +21,7 @@ clearWallsBtn.addEventListener('click', () => {
 });
 
 drawPathBtn.addEventListener('click', () => {
-  grid.drawPath();
+  grid.refreshGrid();
 });
 
 allowDiagonalCheckbox.addEventListener('change', () => {
@@ -32,6 +33,13 @@ redrawPathAutomaticallyCheckbox.addEventListener('change', () => {
     ? 'none'
     : 'block';
   grid.redrawPathAutomatically(redrawPathAutomaticallyCheckbox.checked);
+});
+
+selectPathVisualCheckbox.addEventListener('change', () => {
+  grid.setPathStyle(
+    selectPathVisualCheckbox.options[selectPathVisualCheckbox.selectedIndex]
+      .value
+  );
 });
 
 // Let cursor draw under draggable el

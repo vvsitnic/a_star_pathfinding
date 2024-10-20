@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>A* Pathfinding by Sitnic Vladimir</title>
+    <title>A* Pathfinding by Vladimir Sitnic</title>
     <link rel="icon" type="image/x-icon" href="./img/favicon.ico" />
 
     <link rel="stylesheet" href="style.css" />
@@ -24,7 +24,7 @@
           style="color: #00ffff"
           href="https://github.com/vvsitnic"
           target="_blank"
-          >Sitnic Vladimir</a
+          >Vladimir Sitnic</a
         >
       </h1>
       <ul>
@@ -40,11 +40,18 @@
           position.
         </li>
       </ul>
-      <div>
+      <div class="horizontal-centered">
+        <label for="allow-diagonal">Draw Path As</label>
+        <select name="paths" id="path-visual">
+          <option value="tiles">Tiles</option>
+          <option value="line">Line</option>
+        </select>
+      </div>
+      <div class="horizontal-centered">
         <input type="checkbox" id="allow-diagonal" checked />
         <label for="allow-diagonal">Allow Diagonal</label>
       </div>
-      <div>
+      <div class="horizontal-centered">
         <input type="checkbox" id="redraw-path-automatically" checked />
         <label for="redraw-path-automatically">Redraw Path Automatically</label>
       </div>

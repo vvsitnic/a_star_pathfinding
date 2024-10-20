@@ -14,8 +14,10 @@ class Grid {
 
   _prevTile = null; // Is recorded only when cursor is interacting with the grid
 
+  _path = [];
   _allowDiagonal = true;
   _redrawPathAutomatically = true;
+  _pathStyle = 'tiles';
 
   constructor(canvasElement, canvasWidth, canvasHeight, tileSize) {
     if (!canvasElement) throw new Error('canvasElement not provided!');
@@ -44,6 +46,8 @@ class Grid {
       Math.floor(gridHeight / 2),
     ];
 
+    // Createpath
+    this._aStar();
     // Draw grid
     this._refreshGrid();
     // Handle grid events
@@ -54,6 +58,7 @@ class Grid {
     // On mouse down
     this._canvas.addEventListener('mousedown', e => {
       const [tileX, tileY] = this._getMouseOnGrid(e.clientX, e.clientY);
+      this._prevTile = [tileX, tileY];
       // Record which tile was clicked
       const tile = this._getTile(tileX, tileY);
       // Check if it is a point
@@ -76,6 +81,9 @@ class Grid {
       }
 
       this._lastSelectedTile = tile;
+
+      // Rethink path
+      this._aStar();
       // Redraw grid
       this._refreshGrid();
     });
@@ -98,9 +106,8 @@ class Grid {
 
       // Return if tile didn't change
       if (
-        Array.isArray(this._prevTile) &&
-        tileX === this._prevTile[0] &&
-        tileY === this._prevTile[1]
+        !Array.isArray(this._prevTile) ||
+        (tileX === this._prevTile[0] && tileY === this._prevTile[1])
       )
         return;
 
@@ -110,12 +117,19 @@ class Grid {
         if (!this._walls.some(wall => wall[0] === tileX && wall[1] === tileY)) {
           this._draggablePoint[0] = tileX;
           this._draggablePoint[1] = tileY;
+
+          // Rethink path
+          this._aStar();
+
           this._refreshGrid();
         }
+
+        // Update prev tile
+        this._prevTile = [tileX, tileY];
         return;
       }
 
-      // If cursor is not holding a point and event fired => lastSelectedTile was selected => Attempt to draw if tile isn't a point
+      // If cursor is not holding a point and event fired => lastSelectedTile exists => Attempt to draw if tile isn't a point
       const posOverlapsPoints =
         (tileX === this._point1[0] && tileY === this._point1[1]) ||
         (tileX === this._point2[0] && tileY === this._point2[1]);
@@ -126,14 +140,12 @@ class Grid {
       const lockedTileIndex = this._walls.findIndex(
         wall => wall[0] === tileX && wall[1] === tileY
       );
-
       // If lastSelectedTile was empty => draw walls
       if (this._lastSelectedTile === 1) {
         if (lockedTileIndex !== -1) {
           this._walls.splice(lockedTileIndex, 1);
         }
       }
-
       // If lastSelectedTile was a wall => earase walls
       if (this._lastSelectedTile === 0) {
         if (lockedTileIndex === -1) {
@@ -143,9 +155,22 @@ class Grid {
 
       // Update prev tile
       this._prevTile = [tileX, tileY];
+      // Rethink path
+      this._aStar();
       // Redraw grid
       this._refreshGrid();
     });
+  }
+
+  _aStar() {
+    this._path = a_star(
+      this._point1,
+      this._point2,
+      this._gridSize[0],
+      this._gridSize[1],
+      this._walls,
+      this._allowDiagonal
+    );
   }
 
   _getTile(gridX, gridY) {
@@ -185,7 +210,7 @@ class Grid {
 
     // Draw path conditionally
     if (this._redrawPathAutomatically) {
-      this.drawPath();
+      this._drawPath();
     }
 
     // Draw start and end points
@@ -203,6 +228,24 @@ class Grid {
     );
   }
 
+  _drawLine(point1, point2, color = '#fff', lineWidth = 5) {
+    const tileSize = this._tileSize;
+    this._ctx.strokeStyle = color;
+    this._ctx.lineWidth = lineWidth;
+    this._ctx.lineJoin = 'round';
+    this._ctx.lineCap = 'round';
+    this._ctx.beginPath();
+    this._ctx.moveTo(
+      (point1[0] + 0.5) * tileSize,
+      (point1[1] + 0.5) * tileSize
+    );
+    this._ctx.lineTo(
+      (point2[0] + 0.5) * tileSize,
+      (point2[1] + 0.5) * tileSize
+    );
+    this._ctx.stroke();
+  }
+
   _getMouseOnGrid(mouseX, mouseY) {
     const gridX = Math.floor(mouseX / this._tileSize);
     const gridY = Math.floor(mouseY / this._tileSize);
@@ -211,6 +254,7 @@ class Grid {
 
   clearWalls() {
     this._walls.splice(0, this._walls.length);
+    this._aStar();
     this._refreshGrid();
   }
 
@@ -226,21 +270,29 @@ class Grid {
     }
   }
 
-  drawPath() {
-    const path = a_star(
-      this._point1,
-      this._point2,
-      this._gridSize[0],
-      this._gridSize[1],
-      this._walls,
-      this._allowDiagonal
-    );
-    path?.forEach(point => {
-      this._drawSquare(point[0], point[1], '#0066FF');
-    });
-    // Draw start and end points
-    this._drawSquare(this._point1[0], this._point1[1], '#00DD00');
-    this._drawSquare(this._point2[0], this._point2[1], '#EE4400');
+  _drawPath() {
+    const path = this._path;
+
+    if (path && this._pathStyle === 'tiles') {
+      path.forEach(point => {
+        this._drawSquare(point[0], point[1], '#0066FF');
+      });
+    }
+
+    if (path && this._pathStyle === 'line') {
+      for (let i = 0; i < path.length - 1; i++) {
+        this._drawLine(path[i], path[i + 1], '#0066FF', 10);
+      }
+    }
+  }
+
+  setPathStyle(style) {
+    this._pathStyle = style;
+    this._refreshGrid();
+  }
+
+  refreshGrid() {
+    this._refreshGrid();
   }
 }
 

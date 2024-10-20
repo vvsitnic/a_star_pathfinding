@@ -15,7 +15,9 @@ class Draggable {
 
   _handleEvents() {
     this._el.addEventListener('mousedown', e => {
-      if (['LABEL', 'INPUT', 'BUTTON', 'A'].includes(e.target.tagName)) {
+      if (
+        ['LABEL', 'INPUT', 'BUTTON', 'A', 'SELECT'].includes(e.target.tagName)
+      ) {
         return;
       }
 

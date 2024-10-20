@@ -75,11 +75,6 @@ button:active {
   background-color: #e0e0e0;
 }
 
-a:active,
-a:visited {
-  color: #00ffff;
-}
-
 ul {
   list-style: none;
   margin-bottom: 10px;
@@ -88,4 +83,10 @@ ul {
 li {
   font-size: 14px;
   font-weight: 500;
+}
+
+.horizontal-centered {
+  display: flex;
+  align-items: center;
+  gap: 5px;
 }

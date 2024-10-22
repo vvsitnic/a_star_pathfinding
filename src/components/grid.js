@@ -56,126 +56,127 @@ class Grid {
 
   _handleEvents() {
     // On mouse down
-    this._canvas.addEventListener('mousedown', e => {
-      const [tileX, tileY] = this._getMouseOnGrid(e.clientX, e.clientY);
-      this._prevTile = [tileX, tileY];
-      // Record which tile was clicked
-      const tile = this._getTile(tileX, tileY);
-      // Check if it is a point
-      if (Array.isArray(tile)) {
-        this._draggablePoint = tile;
-        return;
-      }
-
-      // Check if tile is a wall or empty
-      const lockedTileIndex = this._walls.findIndex(
-        wall => wall[0] === tileX && wall[1] === tileY
-      );
-      if (tile === 1) {
-        // Delete wall
-        this._walls.splice(lockedTileIndex, 1);
-      }
-      if (tile === 0) {
-        // Add wall
-        this._walls.push([tileX, tileY]);
-      }
-
-      this._lastSelectedTile = tile;
-
-      // Rethink path
-      if (this._redrawPathAutomatically) {
-        this._aStar();
-      }
-      // Redraw grid
-      this._refreshGrid();
-    });
+    this._canvas.addEventListener('mousedown', this._onMouseDown.bind(this));
 
     // On mouse up
-    this._canvas.addEventListener('mouseup', () => {
-      // Deselect everything that could be selected
-      this._lastSelectedTile = null;
-      this._draggablePoint = null;
-      this._prevTile = null;
-    });
+    this._canvas.addEventListener('mouseup', this._onMouseUp.bind(this));
 
     // On mouse move
-    this._canvas.addEventListener('mousemove', e => {
-      // Check if cursor is interacting (holding point / drawing/deleting walls)
-      if (this._lastSelectedTile === null && this._draggablePoint === null)
-        return;
+    this._canvas.addEventListener('mousemove', this._onMouseMove.bind(this));
+  }
 
-      const [tileX, tileY] = this._getMouseOnGrid(e.clientX, e.clientY);
+  _onMouseDown(e) {
+    const [tileX, tileY] = this._getMouseOnGrid(e.clientX, e.clientY);
+    this._prevTile = [tileX, tileY];
+    // Record which tile was clicked
+    const tile = this._getTile(tileX, tileY);
+    // Check if it is a point
+    if (Array.isArray(tile)) {
+      this._draggablePoint = tile;
+      return;
+    }
 
-      // Return if tile didn't change
-      if (
-        !Array.isArray(this._prevTile) ||
-        (tileX === this._prevTile[0] && tileY === this._prevTile[1])
-      )
-        return;
+    // Check if tile is a wall or empty
+    const lockedTileIndex = this._walls.findIndex(
+      wall => wall[0] === tileX && wall[1] === tileY
+    );
+    if (tile === 1) {
+      // Delete wall
+      this._walls.splice(lockedTileIndex, 1);
+    }
+    if (tile === 0) {
+      // Add wall
+      this._walls.push([tileX, tileY]);
+    }
 
-      // If holding a point, change it's position
-      // Point pos will not change if current tile is a wall
-      if (this._draggablePoint !== null) {
-        if (!this._walls.some(wall => wall[0] === tileX && wall[1] === tileY)) {
-          this._draggablePoint[0] = tileX;
-          this._draggablePoint[1] = tileY;
+    this._lastSelectedTile = tile;
 
-          if (this._redrawPathAutomatically) {
-            // Rethink path
-            this._aStar();
-          }
+    // Rethink path
+    if (this._redrawPathAutomatically) {
+      this._aStar();
+    }
+    // Redraw grid
+    this._refreshGrid();
+  }
 
-          this._refreshGrid();
+  _onMouseUp() {
+    // Deselect everything that could be selected
+    this._lastSelectedTile = null;
+    this._draggablePoint = null;
+    this._prevTile = null;
+  }
+
+  _onMouseMove(e) {
+    // Check if cursor is interacting (holding point / drawing/deleting walls)
+    if (this._lastSelectedTile === null && this._draggablePoint === null)
+      return;
+
+    const [tileX, tileY] = this._getMouseOnGrid(e.clientX, e.clientY);
+
+    // Return if tile didn't change
+    if (
+      !Array.isArray(this._prevTile) ||
+      (tileX === this._prevTile[0] && tileY === this._prevTile[1])
+    )
+      return;
+
+    // If holding a point, change it's position
+    // Point pos will not change if current tile is a wall
+    if (this._draggablePoint !== null) {
+      if (!this._walls.some(wall => wall[0] === tileX && wall[1] === tileY)) {
+        this._draggablePoint[0] = tileX;
+        this._draggablePoint[1] = tileY;
+
+        if (this._redrawPathAutomatically) {
+          // Rethink path
+          this._aStar();
         }
 
-        // Update prev tile
-        this._prevTile = [tileX, tileY];
-        return;
-      }
-
-      // If cursor is not holding a point and event fired => lastSelectedTile exists => Attempt to draw if tile isn't a point
-      const posOverlapsPoints =
-        (tileX === this._point1[0] && tileY === this._point1[1]) ||
-        (tileX === this._point2[0] && tileY === this._point2[1]);
-
-      if (posOverlapsPoints) return;
-
-      // Check if tile is a wall or empty
-      const lockedTileIndex = this._walls.findIndex(
-        wall => wall[0] === tileX && wall[1] === tileY
-      );
-      // If lastSelectedTile was empty => draw walls
-      if (this._lastSelectedTile === 1) {
-        if (lockedTileIndex !== -1) {
-          this._walls.splice(lockedTileIndex, 1);
-        }
-      }
-      // If lastSelectedTile was a wall => earase walls
-      if (this._lastSelectedTile === 0) {
-        if (lockedTileIndex === -1) {
-          this._walls.push([tileX, tileY]);
-        }
+        this._refreshGrid();
       }
 
       // Update prev tile
       this._prevTile = [tileX, tileY];
-      if (this._redrawPathAutomatically) {
-        // Rethink path
-        this._aStar();
+      return;
+    }
+
+    // If cursor is not holding a point and event fired => lastSelectedTile exists => Attempt to draw if tile isn't a point
+    const posOverlapsPoints =
+      (tileX === this._point1[0] && tileY === this._point1[1]) ||
+      (tileX === this._point2[0] && tileY === this._point2[1]);
+
+    if (posOverlapsPoints) return;
+
+    // Check if tile is a wall or empty
+    const lockedTileIndex = this._walls.findIndex(
+      wall => wall[0] === tileX && wall[1] === tileY
+    );
+    // If lastSelectedTile was empty => draw walls
+    if (this._lastSelectedTile === 1) {
+      if (lockedTileIndex !== -1) {
+        this._walls.splice(lockedTileIndex, 1);
       }
-      this._refreshGrid();
-    });
+    }
+    // If lastSelectedTile was a wall => earase walls
+    if (this._lastSelectedTile === 0) {
+      if (lockedTileIndex === -1) {
+        this._walls.push([tileX, tileY]);
+      }
+    }
+
+    // Update prev tile
+    this._prevTile = [tileX, tileY];
+    if (this._redrawPathAutomatically) {
+      // Rethink path
+      this._aStar();
+    }
+    this._refreshGrid();
   }
 
-  _aStar() {
-    this._path = a_star(
-      [...this._point1],
-      [...this._point2],
-      this._gridSize[0],
-      this._gridSize[1],
-      this._walls,
-      this._allowDiagonal
-    );
+  _getMouseOnGrid(mouseX, mouseY) {
+    const gridX = Math.floor(mouseX / this._tileSize);
+    const gridY = Math.floor(mouseY / this._tileSize);
+    return [gridX, gridY];
   }
 
   _getTile(gridX, gridY) {
@@ -192,6 +193,17 @@ class Grid {
       ? 1
       : 0;
     return tile;
+  }
+
+  _aStar() {
+    this._path = a_star(
+      [...this._point1],
+      [...this._point2],
+      this._gridSize[0],
+      this._gridSize[1],
+      this._walls,
+      this._allowDiagonal
+    );
   }
 
   _refreshGrid() {
@@ -218,6 +230,22 @@ class Grid {
     // Draw start and end points
     this._drawSquare(this._point1[0], this._point1[1], '#00DD00');
     this._drawSquare(this._point2[0], this._point2[1], '#EE4400');
+  }
+
+  _drawPath() {
+    const path = this._path;
+
+    if (path && this._pathStyle === 'tiles') {
+      path.forEach(point => {
+        this._drawSquare(point[0], point[1], '#0066FF');
+      });
+    }
+
+    if (path && this._pathStyle === 'line') {
+      for (let i = 0; i < path.length - 1; i++) {
+        this._drawLine(path[i], path[i + 1], '#0066FF', 12);
+      }
+    }
   }
 
   _drawSquare(gridX, gridY, color = '#fff') {
@@ -248,12 +276,6 @@ class Grid {
     this._ctx.stroke();
   }
 
-  _getMouseOnGrid(mouseX, mouseY) {
-    const gridX = Math.floor(mouseX / this._tileSize);
-    const gridY = Math.floor(mouseY / this._tileSize);
-    return [gridX, gridY];
-  }
-
   clearWalls() {
     this._walls.splice(0, this._walls.length);
 
@@ -272,22 +294,6 @@ class Grid {
     this._refreshGrid();
   }
 
-  _drawPath() {
-    const path = this._path;
-
-    if (path && this._pathStyle === 'tiles') {
-      path.forEach(point => {
-        this._drawSquare(point[0], point[1], '#0066FF');
-      });
-    }
-
-    if (path && this._pathStyle === 'line') {
-      for (let i = 0; i < path.length - 1; i++) {
-        this._drawLine(path[i], path[i + 1], '#0066FF', 12);
-      }
-    }
-  }
-
   redrawPathAutomatically(b) {
     this._redrawPathAutomatically = b;
     if (b) {
@@ -301,7 +307,7 @@ class Grid {
     this._refreshGrid();
   }
 
-  refreshGrid() {
+  drawPath() {
     this._aStar();
     this._refreshGrid();
   }

@@ -21,7 +21,7 @@ clearWallsBtn.addEventListener('click', () => {
 });
 
 drawPathBtn.addEventListener('click', () => {
-  grid.refreshGrid();
+  grid.drawPath();
 });
 
 allowDiagonalCheckbox.addEventListener('change', () => {

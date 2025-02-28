@@ -2,14 +2,7 @@ function calcH(x1, x2, y1, y2) {
   return Math.abs(x1 - x2) + Math.abs(y1 - y2);
 }
 
-export default function a_star(
-  start,
-  finish,
-  gridWidth,
-  gridHeight,
-  lockedTiles = [],
-  allowDiagonal = false
-) {
+export default function a_star(start, finish, grid, allowDiagonal = false) {
   const openList = [];
   const closedList = [];
 
@@ -74,10 +67,10 @@ export default function a_star(
 
       if (
         nodeX < 0 ||
-        nodeX > gridWidth - 1 ||
+        nodeX > grid.length - 1 ||
         nodeY < 0 ||
-        nodeY > gridHeight - 1 ||
-        lockedTiles.some(tile => tile[0] === nodeX && tile[1] === nodeY)
+        nodeY > grid[0].length - 1 ||
+        grid[nodeX][nodeY] === 1
       ) {
         continue;
       }
@@ -85,12 +78,8 @@ export default function a_star(
       // Check for diagonal walls if necessary
       if (allowDiagonal) {
         if (
-          lockedTiles.some(
-            tile => tile[0] === nodeX && tile[1] === currentNode.pos[1]
-          ) &&
-          lockedTiles.some(
-            tile => tile[0] === currentNode.pos[0] && tile[1] === nodeY
-          )
+          grid[nodeX][currentNode.pos[1]] === 1 &&
+          grid[currentNode.pos[0]][nodeY] === 1
         ) {
           continue;
         }
@@ -98,7 +87,9 @@ export default function a_star(
 
       // Skip if node has already been checked
       if (
-        closedList.some(node => node.pos[0] === nodeX && node.pos[1] === nodeY)
+        closedList.some(
+          (node) => node.pos[0] === nodeX && node.pos[1] === nodeY
+        )
       ) {
         continue;
       }
@@ -117,7 +108,8 @@ export default function a_star(
       newNode.f = newNode.g + newNode.h;
 
       const openSetNodeIndex = openList.findIndex(
-        node => node.pos[0] === newNode.pos[0] && node.pos[1] === newNode.pos[1]
+        (node) =>
+          node.pos[0] === newNode.pos[0] && node.pos[1] === newNode.pos[1]
       );
       // If node exists in the open list, overwrite it
       // Else add it to the open list

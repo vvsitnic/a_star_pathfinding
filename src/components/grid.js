@@ -1,4 +1,4 @@
-import a_star from '../a_star.js';
+import a_star from "../a_star.js";
 
 class Grid {
   _canvas;
@@ -6,7 +6,7 @@ class Grid {
   _tileSize; // In px
 
   _gridSize = [20, 20]; // In tiles
-  _walls = [];
+  _grid;
   _point1 = [0, 0]; // Start point
   _point2 = [0, 1]; // End point
   _draggablePoint = null;
@@ -17,33 +17,39 @@ class Grid {
   _path = [];
   _allowDiagonal = true;
   _redrawPathAutomatically = true;
-  _pathStyle = 'tiles';
+  _pathStyle = "tiles";
+
+  _gridWidth;
+  _gridHeight;
 
   constructor(canvasElement, canvasWidth, canvasHeight, tileSize) {
-    if (!canvasElement) throw new Error('canvasElement not provided!');
+    if (!canvasElement) throw new Error("canvasElement not provided!");
     if (!canvasWidth || !canvasHeight)
-      throw new Error('canvas dimentions not provided!');
-    if (!tileSize) throw new Error('tile size not provided!');
+      throw new Error("canvas dimentions not provided!");
+    if (!tileSize) throw new Error("tile size not provided!");
 
     // Configure grid and canvas size
-    const gridWidth = Math.floor(canvasWidth / tileSize);
-    const gridHeight = Math.floor(canvasHeight / tileSize);
-    canvasElement.width = gridWidth * tileSize;
-    canvasElement.height = gridHeight * tileSize;
+    this._gridWidth = Math.floor(canvasWidth / tileSize);
+    this._gridHeight = Math.floor(canvasHeight / tileSize);
+    canvasElement.width = this._gridWidth * tileSize;
+    canvasElement.height = this._gridHeight * tileSize;
 
     this._tileSize = tileSize;
-    this._gridSize = [gridWidth, gridHeight];
+    this._gridSize = [this._gridWidth, this._gridHeight];
     this._canvas = canvasElement;
-    this._ctx = canvasElement.getContext('2d');
+    this._ctx = canvasElement.getContext("2d");
+    this._grid = Array.from({ length: this._gridWidth }, () =>
+      Array(this._gridHeight).fill(0)
+    );
 
     // Configure position of start and finish points
     this._point1 = [
-      Math.floor(gridWidth / 2) - Math.floor(gridWidth / 4),
-      Math.floor(gridHeight / 2),
+      Math.floor(this._gridWidth / 2) - Math.floor(this._gridWidth / 4),
+      Math.floor(this._gridHeight / 2),
     ];
     this._point2 = [
-      Math.floor(gridWidth / 2) + Math.floor(gridWidth / 4),
-      Math.floor(gridHeight / 2),
+      Math.floor(this._gridWidth / 2) + Math.floor(this._gridWidth / 4),
+      Math.floor(this._gridHeight / 2),
     ];
 
     // Createpath
@@ -56,13 +62,13 @@ class Grid {
 
   _handleEvents() {
     // On mouse down
-    this._canvas.addEventListener('mousedown', this._onMouseDown.bind(this));
+    this._canvas.addEventListener("mousedown", this._onMouseDown.bind(this));
 
     // On mouse up
-    this._canvas.addEventListener('mouseup', this._onMouseUp.bind(this));
+    this._canvas.addEventListener("mouseup", this._onMouseUp.bind(this));
 
     // On mouse move
-    this._canvas.addEventListener('mousemove', this._onMouseMove.bind(this));
+    this._canvas.addEventListener("mousemove", this._onMouseMove.bind(this));
   }
 
   _onMouseDown(e) {
@@ -77,16 +83,18 @@ class Grid {
     }
 
     // Check if tile is a wall or empty
-    const lockedTileIndex = this._walls.findIndex(
-      wall => wall[0] === tileX && wall[1] === tileY
-    );
+    // const lockedTileIndex = this._walls.findIndex(
+    // (wall) => wall[0] === tileX && wall[1] === tileY
+    // );
     if (tile === 1) {
       // Delete wall
-      this._walls.splice(lockedTileIndex, 1);
+      // this._walls.splice(lockedTileIndex, 1);
+      this._grid[tileX][tileY] = 0;
     }
     if (tile === 0) {
       // Add wall
-      this._walls.push([tileX, tileY]);
+      // this._walls.push([tileX, tileY]);
+      this._grid[tileX][tileY] = 1;
     }
 
     this._lastSelectedTile = tile;
@@ -122,8 +130,9 @@ class Grid {
 
     // If holding a point, change it's position
     // Point pos will not change if current tile is a wall
+    // !this._walls.some((wall) => wall[0] === tileX && wall[1] === tileY)
     if (this._draggablePoint !== null) {
-      if (!this._walls.some(wall => wall[0] === tileX && wall[1] === tileY)) {
+      if (this._grid[tileX][tileY] === 0) {
         this._draggablePoint[0] = tileX;
         this._draggablePoint[1] = tileY;
 
@@ -148,21 +157,11 @@ class Grid {
     if (posOverlapsPoints) return;
 
     // Check if tile is a wall or empty
-    const lockedTileIndex = this._walls.findIndex(
-      wall => wall[0] === tileX && wall[1] === tileY
-    );
+    // const lockedTileIndex = this._walls.findIndex(
+    //   (wall) => wall[0] === tileX && wall[1] === tileY
+    // );
     // If lastSelectedTile was empty => draw walls
-    if (this._lastSelectedTile === 1) {
-      if (lockedTileIndex !== -1) {
-        this._walls.splice(lockedTileIndex, 1);
-      }
-    }
-    // If lastSelectedTile was a wall => earase walls
-    if (this._lastSelectedTile === 0) {
-      if (lockedTileIndex === -1) {
-        this._walls.push([tileX, tileY]);
-      }
-    }
+    this._grid[tileX][tileY] = this._lastSelectedTile === 1 ? 0 : 1;
 
     // Update prev tile
     this._prevTile = [tileX, tileY];
@@ -187,21 +186,19 @@ class Grid {
       return this._point2;
 
     // Return 0 - no wall / 1 - wall
-    const tile = this._walls.some(
-      wall => wall[0] === gridX && wall[1] === gridY
-    )
-      ? 1
-      : 0;
-    return tile;
+    // const tile = this._walls.some(
+    //   (wall) => wall[0] === gridX && wall[1] === gridY
+    // )
+    //   ? 1
+    //   : 0;
+    return this._grid[gridX][gridY];
   }
 
   _aStar() {
     this._path = a_star(
       [...this._point1],
       [...this._point2],
-      this._gridSize[0],
-      this._gridSize[1],
-      this._walls,
+      this._grid,
       this._allowDiagonal
     );
   }
@@ -212,7 +209,7 @@ class Grid {
     this._ctx.clearRect(0, 0, this._canvas.width, this._canvas.height);
 
     // Draw grid
-    this._ctx.strokeStyle = '#ccc';
+    this._ctx.strokeStyle = "#ccc";
     this._ctx.lineWidth = 1;
     for (let x = 0; x < this._canvas.width; x += tileSize) {
       for (let y = 0; y < this._canvas.height; y += tileSize) {
@@ -221,34 +218,41 @@ class Grid {
     }
 
     // Draw walls
-    this._walls.forEach(tile => {
-      this._drawSquare(tile[0], tile[1], '#00000080');
-    });
+    // this._walls.forEach((tile) => {
+    //   this._drawSquare(tile[0], tile[1], "#00000080");
+    // });
+    for (let x = 0; x < this._gridWidth; x++) {
+      for (let y = 0; y < this._gridHeight; y++) {
+        if (this._grid[x][y] === 1) {
+          this._drawSquare(x, y, "#00000080");
+        }
+      }
+    }
 
     this._drawPath();
 
     // Draw start and end points
-    this._drawSquare(this._point1[0], this._point1[1], '#00DD00');
-    this._drawSquare(this._point2[0], this._point2[1], '#EE4400');
+    this._drawSquare(this._point1[0], this._point1[1], "#00DD00");
+    this._drawSquare(this._point2[0], this._point2[1], "#EE4400");
   }
 
   _drawPath() {
     const path = this._path;
 
-    if (path && this._pathStyle === 'tiles') {
-      path.forEach(point => {
-        this._drawSquare(point[0], point[1], '#0066FF');
+    if (path && this._pathStyle === "tiles") {
+      path.forEach((point) => {
+        this._drawSquare(point[0], point[1], "#0066FF");
       });
     }
 
-    if (path && this._pathStyle === 'line') {
+    if (path && this._pathStyle === "line") {
       for (let i = 0; i < path.length - 1; i++) {
-        this._drawLine(path[i], path[i + 1], '#0066FF', 12);
+        this._drawLine(path[i], path[i + 1], "#0066FF", 12);
       }
     }
   }
 
-  _drawSquare(gridX, gridY, color = '#fff') {
+  _drawSquare(gridX, gridY, color = "#fff") {
     this._ctx.fillStyle = color;
     this._ctx.fillRect(
       gridX * this._tileSize,
@@ -258,12 +262,12 @@ class Grid {
     );
   }
 
-  _drawLine(point1, point2, color = '#fff', lineWidth = 5) {
+  _drawLine(point1, point2, color = "#fff", lineWidth = 5) {
     const tileSize = this._tileSize;
     this._ctx.strokeStyle = color;
     this._ctx.lineWidth = lineWidth;
-    this._ctx.lineJoin = 'round';
-    this._ctx.lineCap = 'round';
+    this._ctx.lineJoin = "round";
+    this._ctx.lineCap = "round";
     this._ctx.beginPath();
     this._ctx.moveTo(
       (point1[0] + 0.5) * tileSize,
@@ -277,7 +281,11 @@ class Grid {
   }
 
   clearWalls() {
-    this._walls.splice(0, this._walls.length);
+    for (let x = 0; x < this._gridWidth; x++) {
+      for (let y = 0; y < this._gridHeight; y++) {
+        this._grid[x][y] = 0;
+      }
+    }
 
     if (this._redrawPathAutomatically) {
       this._aStar();

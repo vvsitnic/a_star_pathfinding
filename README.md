@@ -1,20 +1,19 @@
 # A* Pathfinding Algorithm
-This repository contails the code for the A* pathfinfing algorithm in JavaScript for finding the shortest path from point A to point B on a rectangular area. The website allows user to draw walls, move start and ending points. After each interaction, the A* algorithm is called, and the path is drawn.
+This repository contails the code for the A* pathfinfing algorithm in JavaScript for finding the shortest path from point A to point B on a rectangular area.
+
+![Alt Text](https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExZ2ozMHhoNzZvaHJobXlyMWhsbDZwMnV6Z3M4Mm8yYzhmdzBibHAyayZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/49YrhA9qPC8psgmVZe/giphy.gif)
 
 You can try the live demo [here](https://vvs-astar-pathfinding.netlify.app/).
 
 ## Features
-- Interactive grid for drawing walls.
-- Moveable start and end points.
-- Real-time pathfinding visualization using the A* algorithm.
+- draw/earase walls
+- move start/end points
+- visual settigs.
 
 ## How It Works
-This project implements the A* pathfinding algorithm in JavaScript and utilizes HTML Canvas to visually represent the path. The project features a grid and draggable node functionality, which are structured using JavaScript classes for better readability and maintainability.
-
-### A* Pathfinding
-- **g**: path distance from the start node to the current node (initially 0).
-- **h**: heuristic estimate from the current node to the destination (in this case, using the Manhattan distance formula).
-- **f**: sum of `g` and `h` values (estimate lenght of full path).
+- **g** - path distance from the start node to the current node.
+- **h** - heuristic estimate from the current node to the end node (in this case we use Manhattan distance).
+- **f**: sum of `g` and `h` values (estimated lenght of the full path).
 - **Open set**: Set of nodes that are being considered as possible paths.
 - **Closed set**: Set of nodes that have already been checked.
   
